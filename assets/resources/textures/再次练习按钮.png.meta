@@ -1,0 +1,36 @@
+{
+  "ver": "2.3.5",
+  "uuid": "3eb3154b-5ce6-4a08-8e52-46956b60fdd7",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 414,
+  "height": 124,
+  "platformSettings": {},
+  "subMetas": {
+    "再次练习按钮": {
+      "ver": "1.0.4",
+      "uuid": "c93aa0a4-ec62-45ee-8279-3b82b5d371d1",
+      "rawTextureUuid": "3eb3154b-5ce6-4a08-8e52-46956b60fdd7",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 0,
+      "trimY": 0,
+      "width": 414,
+      "height": 124,
+      "rawWidth": 414,
+      "rawHeight": 124,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
