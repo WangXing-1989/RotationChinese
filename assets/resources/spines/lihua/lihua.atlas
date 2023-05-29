@@ -1,0 +1,48 @@
+
+lihua.png
+size: 189,104
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+caidai_fang
+  rotate: true
+  xy: 164, 78
+  size: 24, 23
+  orig: 24, 23
+  offset: 0, 0
+  index: -1
+caidai_hong
+  rotate: true
+  xy: 104, 2
+  size: 34, 58
+  orig: 34, 58
+  offset: 0, 0
+  index: -1
+guangyun
+  rotate: false
+  xy: 2, 2
+  size: 100, 100
+  orig: 100, 100
+  offset: 0, 0
+  index: -1
+lihua
+  rotate: false
+  xy: 164, 54
+  size: 22, 22
+  orig: 22, 22
+  offset: 0, 0
+  index: -1
+star
+  rotate: false
+  xy: 164, 30
+  size: 22, 22
+  orig: 22, 22
+  offset: 0, 0
+  index: -1
+yuan
+  rotate: false
+  xy: 104, 38
+  size: 58, 64
+  orig: 58, 64
+  offset: 0, 0
+  index: -1
