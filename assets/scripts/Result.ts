@@ -1,6 +1,6 @@
 import Main from "./Main";
 
-const {ccclass, property} = cc._decorator;
+const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Result extends cc.Component {
@@ -20,9 +20,15 @@ export default class Result extends cc.Component {
     @property(cc.Node)
     timeOut: cc.Node = null;
 
+    @property(cc.Node)
+    right: cc.Node = null;
+
+    @property(cc.Node)
+    wrong: cc.Node = null;
+
     @property(sp.Skeleton)
     lihua: sp.Skeleton = null;
-    
+
     private main: Main;
 
     start() {
@@ -72,15 +78,47 @@ export default class Result extends cc.Component {
         this.playShow(this.timeOut);
     }
 
+    public showRight(startPos: cc.Vec2) {
+        this.node.active = true;
+        this.hideAllDialog();
+        this.right.active = true;
+        this.right.x = startPos.x;
+        this.right.y = startPos.y;
+        let spine: sp.Skeleton = this.right.getChildByName("starSpine").getComponent(sp.Skeleton);
+        spine.setAnimation(0, "shibiemubiao", false);
+        cc.tween(this.right)
+            .by(0.7, { y: 150 })
+            .call(() => {
+                this.right.active = false;
+                this.node.active = false;
+            })
+            .start();
+    }
+
+    public showWrong(startPos: cc.Vec2) {
+        this.node.active = true;
+        this.hideAllDialog();
+        this.wrong.active = true;
+        this.wrong.x = startPos.x;
+        this.wrong.y = startPos.y;
+        cc.tween(this.wrong)
+            .by(0.7, { y: 150 })
+            .call(() => {
+                this.wrong.active = false;
+                this.node.active = false;
+            })
+            .start();
+    }
+
     private playShow(dialog: cc.Node) {
         dialog.active = true;
         dialog.scale = 0;
-        cc.tween(dialog).to(0.5, {scale: 1}, { easing: 'elasticOut'}).start();
+        cc.tween(dialog).to(0.5, { scale: 1 }, { easing: 'elasticOut' }).start();
     }
 
     private playHide(dialog: cc.Node) {
         dialog.scale = 1;
-        cc.tween(dialog).to(0.5, {scale: 0}, { easing: 'elasticIn'}).call(() => dialog.active = false).start();
+        cc.tween(dialog).to(0.5, { scale: 0 }, { easing: 'elasticIn' }).call(() => dialog.active = false).start();
     }
 
     private playLihua() {
@@ -94,6 +132,8 @@ export default class Result extends cc.Component {
         this.upLevel.active = false;
         this.allWin.active = false;
         this.timeOut.active = false;
+        this.right.active = false;
+        this.wrong.active = false;
         this.lihua.node.active = false;
     }
 }

@@ -1,3 +1,4 @@
+import { Config } from "./Config";
 import Model from "./Model";
 import Result from "./Result";
 
@@ -22,7 +23,7 @@ export default class Main extends cc.Component {
     timeLabel: cc.Label = null;
 
     @property(cc.Label)
-    sourceLabel: cc.Label = null;
+    scoreLabel: cc.Label = null;
 
     @property(cc.Node)
     front: cc.Node = null; // 正面
@@ -45,6 +46,9 @@ export default class Main extends cc.Component {
     @property(cc.Node)
     hand: (cc.Node) = null;
 
+    @property(cc.Node)
+    clickNode: cc.Node = null;
+
     @property(cc.AudioClip)
     audioTips1: cc.AudioClip = null;
 
@@ -64,6 +68,10 @@ export default class Main extends cc.Component {
     audioPlease: cc.AudioClip = null;
 
     private handTween: cc.Tween;
+    private levelData: any;
+    private startPos: cc.Vec2; // 汉字的初始位置
+    private startTime: number;
+    private endTime: number;
 
     start() {
         this.init();
@@ -72,6 +80,10 @@ export default class Main extends cc.Component {
     private init() {
         Model.curLevel = 0;
         this.stopHand();
+        this.cover.active = true;
+        this.clickNode.active = true;
+        this.timeLabel.node.parent.active = false;
+        this.scoreLabel.node.parent.active = false;
     }
 
     private clickStartGameBtn() {
@@ -112,6 +124,9 @@ export default class Main extends cc.Component {
         this.hand.active = false;
 
         this.set_lianxi_3(1);
+
+        Model.curPage = 1;
+        this.showContent();
     }
 
     private set_lianxi_3(step: 1 | 2 | 3) {
@@ -136,8 +151,8 @@ export default class Main extends cc.Component {
                 this.set_lianxi_3(2);
             } else if (label2.active) {
                 this.set_lianxi_3(3);
-            } else if (label3.active) {
 
+                this.clickNode.active = false;
             }
         }
     }
@@ -168,8 +183,139 @@ export default class Main extends cc.Component {
     }
 
 
-    private showContent(level: number) {
-        
+    private showContent() {
+        this.content.active = true;
+
+        this.levelData = Config[`level_${Model.curLevel}`];
+        let hanziUrlList: string[] = this.getRandomList(this.levelData.urlList, this.levelData.hanziCount);
+        console.log("hanziUrlList : " + hanziUrlList);
+
+        this.parent.removeAllChildren();
+        for (let i = 0; i < hanziUrlList.length; i++) {
+            let zmNode: cc.Node = this.createHanzi(hanziUrlList[i], 1);
+            let jxNode: cc.Node = this.createHanzi(hanziUrlList[i], 2);
+            zmNode.x = Math.random() * 650 - 325;
+            zmNode.y = Math.random() * 400 - 200;
+            jxNode.x = Math.random() * 650 - 325;
+            jxNode.y = Math.random() * 400 - 200;
+            this.parent.addChild(zmNode);
+            this.parent.addChild(jxNode);
+            zmNode.on(cc.Node.EventType.TOUCH_START, this.onStartHanzi, this);
+            jxNode.on(cc.Node.EventType.TOUCH_START, this.onStartHanzi, this);
+        }
+
+        this.startTime = new Date().getTime();
+    }
+
+    private onStartHanzi(e: cc.Event.EventTouch) {
+        this.startPos = e.currentTarget.getPosition();
+        e.currentTarget.on(cc.Node.EventType.TOUCH_MOVE, this.onMoveHanzi, this);
+        e.currentTarget.on(cc.Node.EventType.TOUCH_END, this.onEndHanzi, this);
+        e.currentTarget.on(cc.Node.EventType.TOUCH_CANCEL, this.onEndHanzi, this);
+    }
+
+    private onMoveHanzi(e: cc.Event.EventTouch) {
+        e.currentTarget.x += e.getDeltaX();
+        e.currentTarget.y += e.getDeltaY();
+    }
+
+    private onEndHanzi(e: cc.Event.EventTouch) {
+        e.currentTarget.off(cc.Node.EventType.TOUCH_MOVE, this.onMoveHanzi, this);
+        e.currentTarget.off(cc.Node.EventType.TOUCH_END, this.onEndHanzi, this);
+        e.currentTarget.off(cc.Node.EventType.TOUCH_CANCEL, this.onEndHanzi, this);
+
+        let hanzi: cc.Node = e.currentTarget;
+        if (this.front.getBoundingBoxToWorld().contains(e.getLocation())) { // 拖到正面框中
+            let obj: {time: number, isCorrect: boolean} = {time: 0, isCorrect: false};
+            obj.time = Math.round((new Date().getTime() - this.startTime) / 1000);
+            this.startTime = new Date().getTime();
+
+            if (hanzi.scaleX == 1) {
+                this.result.showRight(this.front.getPosition());
+                obj.isCorrect = true;
+            } else {
+                this.result.showWrong(this.front.getPosition());
+                obj.isCorrect = false;
+            }
+            hanzi.removeFromParent();
+            Model.answers[Model.curLevel].list.push(obj);
+            console.log("Model.answers : " + Model.answers);
+        } else if (this.opposite.getBoundingBoxToWorld().contains(e.getLocation())) { // 拖到镜像框中
+            let obj: {time: number, isCorrect: boolean} = {time: 0, isCorrect: false};
+            obj.time = Math.round((new Date().getTime() - this.startTime) / 1000);
+            this.startTime = new Date().getTime();
+
+            if (hanzi.scaleX == -1) {
+                this.result.showRight(this.opposite.getPosition());
+                obj.isCorrect = true;
+            } else {
+                this.result.showWrong(this.opposite.getPosition());
+                obj.isCorrect = false;
+            }
+            hanzi.removeFromParent();
+            Model.answers[Model.curLevel].list.push(obj);
+            console.log("Model.answers : " + Model.answers);
+        } else {
+            hanzi.x = this.startPos.x;
+            hanzi.y = this.startPos.y;
+        }
+    }
+
+    private checkScore() {
+
+    }
+
+    private checkResult() {
+        if (this.parent.childrenCount <= 0) {
+            if (Model.curPage < this.levelData.pageCount) {
+                Model.curPage++;
+                this.showContent();
+            } else {
+                let allList = Model.answers[Model.curLevel].list;
+                let correctList = allList.filter(item => item.isCorrect);
+                if (correctList.length / allList.length >= this.levelData.need) { // 过关
+                    if (Model.curLevel < 4) {
+                        if (Model.curLevel == 0) {
+                            this.result.showWin();
+                        } else {
+                            this.result.showUpLevel();
+                        }
+                    } else {
+                        this.result.showAllWin(Model.curScore);
+                    }
+                } else {
+                    Model.curPage = 1;
+                    this.showContent();
+                }
+            }
+        }
+    }
+
+    private createHanzi(url: string, type: 1 | 2) {
+        let node: cc.Node = new cc.Node(url.substring(url.lastIndexOf("/") + 1));
+        node.scaleX = type == 1 ? 1 : -1;
+        let sprite: cc.Sprite = node.addComponent(cc.Sprite);
+        cc.resources.load(url, cc.Texture2D, (err, res: cc.Texture2D) => {
+            if (!err) {
+                sprite.spriteFrame = new cc.SpriteFrame(res);
+                node.width = res.width;
+                node.height = res.height;
+            }
+        });
+        return node;
+    }
+
+    private getRandomList(array: any[], count: number): any[] {
+        let arr1 = array.filter(() => true);
+        let newArr = [];
+        while (newArr.length < count) {
+            let random = Math.floor(Math.random() * arr1.length);
+            if (random > arr1.length - 1) {
+                random = arr1.length - 1;
+            }
+            newArr.push(arr1.splice(random, 1)[0]);
+        }
+        return newArr;
     }
 
     // update (dt) {}

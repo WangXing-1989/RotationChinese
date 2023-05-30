@@ -1,9 +1,10 @@
 export const Config = {
     level_0: { // 练习模式
-        hanziCount: 1,
-        styleCount: 1,
-        pageCount: 1,
-        urlList: [
+        hanziCount: 1, // 几个汉字
+        styleCount: 1, // 每个汉字几种样式（就是角度）
+        pageCount: 1, // 几页
+        need: 1, // 正确率达到多少才能过关？1表示百分之百
+        urlList: [ // 
             "textures/level_1/你",
             "textures/level_1/我",
             "textures/level_1/他"
@@ -13,6 +14,7 @@ export const Config = {
         hanziCount: 1,
         styleCount: 3,
         pageCount: 2,
+        need: 1,
         urlList: [
             "textures/level_1/为",
             "textures/level_1/习",
@@ -29,6 +31,7 @@ export const Config = {
         hanziCount: 2,
         styleCount: 3,
         pageCount: 2,
+        need: 0.8,
         urlList: [
             "textures/level_2/吃",
             "textures/level_2/塔",
@@ -44,6 +47,7 @@ export const Config = {
         hanziCount: 2,
         styleCount: 4,
         pageCount: 2,
+        need: 0.8,
         urlList: [
             "textures/level_3/候",
             "textures/level_3/影",
@@ -59,6 +63,7 @@ export const Config = {
         hanziCount: 3,
         styleCount: 3,
         pageCount: 2,
+        need: 0.8,
         urlList: [
             "textures/level_4/园",
             "textures/level_4/晨",

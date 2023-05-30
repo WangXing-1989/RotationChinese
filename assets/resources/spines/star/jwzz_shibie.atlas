@@ -1,0 +1,20 @@
+
+jwzz_shibie.png
+size: 192,107
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+star
+  rotate: false
+  xy: 2, 2
+  size: 104, 103
+  orig: 104, 103
+  offset: 0, 0
+  index: -1
+yuan
+  rotate: false
+  xy: 108, 23
+  size: 82, 82
+  orig: 82, 82
+  offset: 0, 0
+  index: -1
