@@ -87,7 +87,7 @@ export default class GHttp {
 
 
     /**上报游戏数据 */
-    upLoadGameData(data: any) {
+    upLoadGameData() {
         // this.cleanToken()
         // this.authToken="eyJhbGciOiJIUzUxMiIsImlhdCI6MTY4MDA3OTQ0NCwiZXhwIjoxNjgyNjcxNDQ0fQ.eyJjb25maXJtX2lkIjoxOTF9.pYWrmoAc8oemLRorPh2dK6kwtbLsmdQHBBen7jMukb7psPhSqzWdLFy9RqA-Zln3nPu_a_CnK1nX-AVhbTzguQ"
 

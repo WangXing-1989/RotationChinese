@@ -1,4 +1,6 @@
+import GHttp from "./GHttp";
 import Main from "./Main";
+import Model from "./Model";
 
 const { ccclass, property } = cc._decorator;
 
@@ -66,6 +68,8 @@ export default class Result extends cc.Component {
         this.hideAllDialog();
         this.playShow(this.allWin);
         this.playLihua();
+
+        this.upload();
     }
 
     public showTimeOut(integral: number) {
@@ -76,9 +80,13 @@ export default class Result extends cc.Component {
 
         this.hideAllDialog();
         this.playShow(this.timeOut);
+
+        this.upload();
     }
 
     public showRight(startPos: cc.Vec2) {
+        cc.audioEngine.stopAllEffects();
+        cc.audioEngine.playEffect(this.main.audioRight, false);
         this.node.active = true;
         this.hideAllDialog();
         this.right.active = true;
@@ -96,6 +104,8 @@ export default class Result extends cc.Component {
     }
 
     public showWrong(startPos: cc.Vec2) {
+        cc.audioEngine.stopAllEffects();
+        cc.audioEngine.playEffect(this.main.audioWrong, false);
         this.node.active = true;
         this.hideAllDialog();
         this.wrong.active = true;
@@ -135,5 +145,36 @@ export default class Result extends cc.Component {
         this.right.active = false;
         this.wrong.active = false;
         this.lihua.node.active = false;
+    }
+
+    /** 点击开始游戏按钮 */
+    private clickStartGameBtn() {
+        this.showUpLevel();
+    }
+
+    /** 点击再次练习按钮 */
+    private clickTryAgainBtn() {
+        Model.curPage = 1;
+        Model.answers[Model.curLevel].list = [];
+        this.main.showContent();
+        this.node.active = false;
+    }
+
+    /** 点击开始训练按钮 */
+    private clickStartXl() {
+        this.main.upLevel();
+        this.node.active = false;
+    }
+
+    /** 点击再来一次按钮 */
+    private clickResetPlay() {
+        this.main.init();
+        this.node.active = false;
+    }
+
+    private upload() {
+        Model.updateAccuracy();
+        Model.updateAverageReaction();
+        GHttp.instance.upLoadGameData();
     }
 }
