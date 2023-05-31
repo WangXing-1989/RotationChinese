@@ -72,6 +72,7 @@ export default class Main extends cc.Component {
     private levelData: any;
     private startPos: cc.Vec2; // 汉字的初始位置
     private timeNum: number;
+    private isDrag: boolean;
 
     start() {
         GHttp.instance.login();
@@ -85,7 +86,9 @@ export default class Main extends cc.Component {
         this.clickNode.active = true;
         this.timeLabel.node.parent.active = false;
         this.scoreLabel.node.parent.active = false;
+        this.isDrag = false;
         Model.initAnswers();
+        Model.curScore = 0;
     }
 
     private clickStartGameBtn() {
@@ -160,7 +163,9 @@ export default class Main extends cc.Component {
             let fromPos = hanzi.getPosition();
             let toPos = hanzi.scaleX == 1 ? this.front.getPosition() : this.opposite.getPosition();
             this.scheduleOnce(() => {
-                this.playHand2(fromPos, toPos);
+                if (!this.isDrag) {
+                    this.playHand2(fromPos, toPos);
+                }
             }, 2);
         } else {
             this.scheduleOnce(this.playHand, 2);
@@ -228,51 +233,56 @@ export default class Main extends cc.Component {
     public showContent() {
         this.content.active = true;
 
+        this.timeNum = new Date().getTime();
+
         this.levelData = Config[`level_${Model.curLevel}`];
         let hanziUrlList: string[] = this.getRandomList(this.levelData.urlList, this.levelData.hanziCount);
         console.log("hanziUrlList : " + hanziUrlList);
 
-        this.parent.removeAllChildren();
-        let pList: cc.Vec3[] = [];
+        let arr: cc.Node[] = [];
         for (let j = 0; j < this.levelData.styleCount; j++) {
             for (let i = 0; i < hanziUrlList.length; i++) {
-                let zmNode: cc.Node = this.createHanzi(hanziUrlList[i], 1);
-                let jxNode: cc.Node = this.createHanzi(hanziUrlList[i], 2);
-                if (Model.curLevel == 0) {
-                    zmNode.x = -200;
-                    zmNode.y = 0;
-                    jxNode.x = 200;
-                    jxNode.y = 0;
-                } else {
-                    zmNode.position = this.getPosition(pList);
-                    pList.push(zmNode.position);
-                    jxNode.position = this.getPosition(pList);
-                    pList.push(jxNode.position);
-                    zmNode.angle = Math.floor(Math.random() * 8) * 45;
-                }
-                
-                this.parent.addChild(zmNode);
-                this.parent.addChild(jxNode);
-                zmNode.on(cc.Node.EventType.TOUCH_START, this.onStartHanzi, this);
-                jxNode.on(cc.Node.EventType.TOUCH_START, this.onStartHanzi, this);
+                arr.push(this.createHanzi(hanziUrlList[i], 1));
+                arr.push(this.createHanzi(hanziUrlList[i], 2));
             }
         }
 
-        this.timeNum = new Date().getTime();
+        if (Model.curLevel == 0) {
+            this.parent.removeAllChildren();
+            for (let i = 0; i < arr.length; i++) {
+                arr[i].x = -200 + 400 * i;
+                arr[i].y = 0;
+                this.parent.addChild(arr[i]);
+                arr[i].on(cc.Node.EventType.TOUCH_START, this.onStartHanzi, this);
+            }
+        } else {
+            let arr2: cc.Node[] = [];
+            while (arr2.length < this.levelData.hanziCount * this.levelData.styleCount) {
+                let random = Math.floor(Math.random() * arr.length);
+                if (random > arr.length - 1) {
+                    random = arr.length - 1;
+                }
+                arr2.push(arr.splice(random, 1)[0]);
+            }
+
+            this.parent.removeAllChildren();
+            let pList: cc.Vec3[] = [];
+            for (let i = 0; i < arr2.length; i++) {
+                arr2[i].position = this.getPosition(pList);
+                pList.push(arr2[i].position);
+                arr2[i].angle = Math.floor(Math.random() * 8) * 45;
+                this.parent.addChild(arr2[i]);
+                arr2[i].on(cc.Node.EventType.TOUCH_START, this.onStartHanzi, this);
+            }
+        }
     }
 
     private getPosition(posList: cc.Vec3[]): cc.Vec3 {
         let p = cc.v3();
 
-        // p.x = Math.floor(Math.random() * 6) * 100 - 300;
-        // p.y = Math.floor(Math.random() * 4) * 100 - 200;
-        // if (posList.some(item => item.x == p.x && item.y == p.y)){
-        //     return this.getPosition(posList);
-        // }
-
         p.x = Math.random() * 600 - 300;
-        p.y = Math.random() * 400 - 200;
-        if (posList.some(item => this.getDistance(item, p) < 150)){
+        p.y = Math.random() * 600 - 200;
+        if (posList.some(item => this.getDistance(item, p) < 100)){
             return this.getPosition(posList);
         }
 
@@ -287,6 +297,7 @@ export default class Main extends cc.Component {
     }
 
     private onStartHanzi(e: cc.Event.EventTouch) {
+        this.isDrag = true;
         this.stopHand();
         this.startPos = e.currentTarget.getPosition();
         e.currentTarget.on(cc.Node.EventType.TOUCH_MOVE, this.onMoveHanzi, this);
@@ -295,16 +306,24 @@ export default class Main extends cc.Component {
     }
 
     private onMoveHanzi(e: cc.Event.EventTouch) {
+        this.stopHand();
         e.currentTarget.x += e.getDeltaX();
         e.currentTarget.y += e.getDeltaY();
     }
 
     private onEndHanzi(e: cc.Event.EventTouch) {
+        this.stopHand();
         e.currentTarget.off(cc.Node.EventType.TOUCH_MOVE, this.onMoveHanzi, this);
         e.currentTarget.off(cc.Node.EventType.TOUCH_END, this.onEndHanzi, this);
         e.currentTarget.off(cc.Node.EventType.TOUCH_CANCEL, this.onEndHanzi, this);
 
         let hanzi: cc.Node = e.currentTarget;
+        if (Model.curLevel > 0 && Model.curTime <= 0) {
+            hanzi.x = this.startPos.x;
+            hanzi.y = this.startPos.y;
+            return;
+        }
+
         if (this.front.getBoundingBoxToWorld().contains(e.getLocation())) { // 拖到正面框中
             let obj: {time: number, isCorrect: boolean} = {time: 0, isCorrect: false};
             obj.time = Math.round((new Date().getTime() - this.timeNum) / 1000);
