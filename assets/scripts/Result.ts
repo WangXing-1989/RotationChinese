@@ -57,6 +57,8 @@ export default class Result extends cc.Component {
         this.hideAllDialog();
         this.playShow(this.upLevel);
         this.playLihua();
+
+        this.scheduleOnce(this.clickStartXl, 2);
     }
 
     public showAllWin(integral: number) {
@@ -149,7 +151,8 @@ export default class Result extends cc.Component {
 
     /** 点击开始游戏按钮 */
     private clickStartGameBtn() {
-        this.showUpLevel();
+        // this.showUpLevel();
+        this.clickStartXl();
     }
 
     /** 点击再次练习按钮 */
