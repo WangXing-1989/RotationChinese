@@ -88,7 +88,7 @@ export default class Main extends cc.Component {
         this.scoreLabel.node.parent.active = false;
         this.isDrag = false;
         Model.initAnswers();
-        Model.curScore = 0;
+        Model.curScore = 0; // test
     }
 
     private clickStartGameBtn() {
